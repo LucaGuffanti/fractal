@@ -3,8 +3,8 @@ from typing import Any
 import numpy as np
 import time
 
-import src.core.FractalBase as FractalBase
-import src.utils.Constants as Constants
+import core.FractalBase as FractalBase
+import utils.Constants as Constants
 
 
 

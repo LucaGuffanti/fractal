@@ -1,8 +1,7 @@
 from typing import Any
 
-import src.core.julia.SequentialJulia as seq
-import src.utils.Renderer as renderer
-import src.utils.Constants as Constants
+import core.julia.SequentialJulia as seq
+import utils.Renderer as renderer
 
 import numpy as np
 
@@ -14,19 +13,20 @@ if __name__ == "__main__":
 
     real_domain: tuple = (-2, 2)
     imag_domain: tuple = (-2, 2)
-    max_iterations: int = 100
+    max_iterations: int = 500
 
-    def quintic_iteration(
+    def mandelbrot_iteration(
         z: np.ndarray[int, np.complex128],
         to_compute: np.ndarray[Any, np.dtype[bool]],
-        c: np.complex128
+        c
     ):
-        z[to_compute] = z[to_compute]**5 + c
+        z[to_compute] = np.abs(z[to_compute].real) + np.abs(z[to_compute].imag)*1j
+        z[to_compute] = (z[to_compute])**2 + c[to_compute]
         return z
 
-    s = seq.SequentialJulia(2000,
-                            2000,
-                            iteration_function=quintic_iteration)
+
+    grid_dim = 5000
+    s = seq.SequentialJulia(grid_dim, grid_dim, mandelbrot_iteration)
 
 
 
@@ -42,19 +42,28 @@ if __name__ == "__main__":
     c_end =-0.892 - 0.5672935j
 
     print("Computing fractal")
-    fractal = s.compute_fractal((-2.0, 2.0), (-2.0, 2.0), max_iterations, c_start)
+
+    #RE = [-0.96, -0.80]
+    #IM = [-0.35, -0.2]
+
+    real_axis = np.linspace(-2.5, 1, grid_dim)
+    imag_axis = np.linspace(-1, 1, grid_dim)
+    real, imag = np.meshgrid(real_axis, imag_axis)
+    grid = real + imag * 1j
+
+    fractal = s.compute_fractal((-2.5, 1), (-1, 1), max_iterations, grid)
     print(fractal)
     print("Rendering fractal")
     renderer.render_fractal(fractal)
 
-    print("Computing fractal")
-    fractal = s.compute_fractal((-1.3, 1.3), (-1.3, 1.3), max_iterations, c_end)
-    print(fractal)
-    print("Rendering fractal")
-    renderer.render_fractal(fractal)
+    # print("Computing fractal")
+    # fractal = s.compute_fractal((-1.3, 1.3), (-1.3, 1.3), max_iterations, c_end)
+    # print(fractal)
+    # print("Rendering fractal")
+    # renderer.render_fractal(fractal)
 
-    fractals = s.interpolate_fractal(c_start, c_end,300,(-1.3, 1.3), (-1.3, 1.3), max_iterations)
-    renderer.animate_transition(fractals)
+    # fractals = s.interpolate_fractal(c_start, c_end,300,(-1.3, 1.3), (-1.3, 1.3), max_iterations)
+    # renderer.animate_transition(fractals)
 
 
 
