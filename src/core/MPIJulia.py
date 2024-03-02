@@ -35,9 +35,31 @@ class MPIJulia(FractalBase.Fractal):
                         real_interval: tuple[np.float64, np.float64],
                         imag_interval: tuple[np.float64, np.float64],
                         max_iterations: int = 200,
-                        c: np.complex128 = 0 + 0j):   
+                        c: np.complex128 = 0 + 0j):  
+        # First, build the computational domain
+        pixels = np.zeros((self.ppr, self.ppc), dtype=int)
 
-        pass
+        real_axis = np.linspace(real_interval[0], real_interval[1], num=self.ppc)
+        imag_axis = np.linspace(imag_interval[0], imag_interval[1], num=self.ppr)
+
+        real, imag = np.meshgrid(real_axis, imag_axis)
+        grid = real + imag * 1j
+        # Then, build the boolean mask to choose which point should be computed
+        to_compute = np.ones((self.ppr, self.ppc), dtype=bool)
+        diverging = np.zeros((self.ppr, self.ppc), dtype=bool)
+
+        # And apply the iteration.
+        for iteration in range(max_iterations):
+            grid = self.iteration_function(grid, to_compute, c)
+            diverging = self.escape_time_function(grid, to_compute)
+
+            diverging = np.reshape(diverging, (self.ppr, self.ppc))
+            pixels[diverging] = iteration
+            to_compute = to_compute & np.logical_not(diverging)
+
+            # print(f"Iteration: {iteration}")
+        # And return the pixels
+        return pixels 
 
     def compute_fractal_distributed(self,
                     real_interval: tuple[np.float64, np.float64],
@@ -161,10 +183,12 @@ class MPIJulia(FractalBase.Fractal):
                 imag_interval,
                 max_iterations,
                 current_c
-            ))
+            ).flatten())
         global_frac = []
+        to_send = np.concatenate(fractals)
+            
 
-        global_frac = self.comm.Gatherv(fractals, (global_frac, num_fractals), 0)
+        global_frac = self.comm.gather(to_send, 0)
         return global_frac
 
     def execute_zoom(self,

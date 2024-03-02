@@ -4,9 +4,9 @@ import numpy as np
 
 
 def base_julia_iteration(
-        z: np.ndarray[int, np.complex128],
-        to_compute: np.ndarray[Any, np.dtype[bool]],
-        c: np.complex128
+        z,
+        to_compute,
+        c
 ):
     """
     Applies the iteration
@@ -22,8 +22,8 @@ def base_julia_iteration(
 
 
 def base_julia_escape_time(
-        z: np.ndarray[int, np.complex128],
-        to_compute: np.ndarray[Any, np.dtype[bool]]
+        z,
+        to_compute
 ):
     """
     With a Julia set, we deem a point to be divergent if its module

@@ -78,16 +78,33 @@ if __name__ == "__main__":
 
     
     grid_dim = 1001
+    size = 500
     s2 = mpiJulia.MPIJulia(
-        2000, 2000
+        size, size
     )
 
-    pixel_matrices = s2.compute_fractal_distributed((-2, 2), (-2,2), 200, -0.85-0.2j)
-    #pixel_matrices = s2.interpolate_fractal(0+0j, -0.85-0.2j, 12, (-2, 2), (-2, 2))
+    # pixel_matrices = s2.compute_fractal_distributed((-2, 2), (-2,2), 200, -0.85-0.2j)
+    # pixel_matrices = s2.interpolate_fractal(0+0j, -0.85-0.2j, 12, (-2, 2), (-2, 2))
+    # if s2.rank == 0:
+    #     # print(pixel_matrices)
+    #     # print(len(pixel_matrices))
+    #     # print(len(pixel_matrices[0]))
+    #     res = np.concatenate(pixel_matrices, axis=1)
+    #     print(len(res))
+    #     renderer.save_fractal(res, "frac.jpg")
+
+    pixel_matrices = s2.interpolate_fractal(0+0j, -0.85-0.2j, 200, (-2, 2), (-2, 2))
+    
     if s2.rank == 0:
-        # print(pixel_matrices)
-        # print(len(pixel_matrices))
-        # print(len(pixel_matrices[0]))
-        res = np.concatenate(pixel_matrices, axis=1)
-        print(len(res))
-        renderer.save_fractal(res, "frac.jpg")
+        print(pixel_matrices)
+        print(len(pixel_matrices[0]))
+        global_fractals = []
+        for frac_batch in pixel_matrices:
+            num_blocks = len(frac_batch) // (size * size)
+            blocks = [frac_batch[i * (size * size): (i + 1) * (size * size)] for i in range(num_blocks)]
+            for block in blocks:
+                block = np.reshape(block, (size, size))
+                global_fractals.append(block)
+        renderer.animate_transition(global_fractals)
+        print(global_fractals)
+
