@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib
 import numpy as np
 
 CMAP = "magma"
 INTERPOLATION = "None"
-FPS = 30
+FPS = 15
 
 
 def render_fractal(fractal):
@@ -26,6 +27,7 @@ def render_fractal_batch(fractals):
 
 def save_fractal(fractal, name):
     plt.figure(figsize=(30, 30))
+    plt.axis("off")
 
     plt.imshow(fractal, interpolation=INTERPOLATION, cmap=CMAP, origin="lower")
     plt.savefig(name)
@@ -33,7 +35,7 @@ def save_fractal(fractal, name):
     plt.show()
 
 
-def animate_transition(fractals, save=True):
+def animate_transition(fractals, name="animation.gif",save=True):
     ims = []
     fig, ax = plt.subplots()
 
@@ -44,5 +46,5 @@ def animate_transition(fractals, save=True):
         ims.append([im])
 
     ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True)
-    ani.save("animation.mp4", fps=FPS, dpi=300)
+    ani.save(name, fps=FPS, dpi=300)
     plt.show()
